@@ -12,6 +12,7 @@
   "license": "MIT",
   "typings": "primus.d.ts",
   "dependencies": {
+    "clean-dir": "^1.0.3",
     "copyfiles": "^2.0.0",
     "engine.io": "^3.2.0",
     "eventemitter3": "^3.0.1",
@@ -23,12 +24,11 @@
     "@types/node": "^9.4.7"
   },
   "scripts": {
-    "clean": "rm -rf dist",
+    "clean": "cleandir dist",
     "start": "npm-run-all clean copy:static copy:first-build --parallel watch:build watch:server",
     "copy:static": "copyfiles -u 1 ./src/**/*.html app/**/*.css dist/",
     "copy:first-build": "tsc",
     "watch:build": "tsc --watch",
     "watch:server": "nodemon --watch './dist' -e js,html"
-
   }
 }
