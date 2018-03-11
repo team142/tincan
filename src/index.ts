@@ -25,7 +25,6 @@ primus.on('connection', function connection(spark) {
     connections.push(spark);
   spark.on('data', function received(data) {
     console.log(spark.id, 'received message:', data);
-
     for(let connection of connections){
         connection.write(data);
     }

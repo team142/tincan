@@ -5,7 +5,13 @@ The goal of this project is to have a standalone node server and allow clients t
 
 ## Setup
 
+Make sure you have node and npm installed on your system
+
 ## Build
+
+Run the command:
+
+`npm run start`
 
 ## Hosting your own server
 

@@ -19,7 +19,7 @@ primus.on('connection', function connection(spark) {
         console.log(spark.id, 'received message:', data);
         for (var _i = 0, connections_1 = connections; _i < connections_1.length; _i++) {
             var connection_1 = connections_1[_i];
-            connection_1.write(data);
+            connection_1.write(data +"AWESOME");
         }
     });
 });
