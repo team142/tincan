@@ -11,6 +11,10 @@ Make sure you have node and npm installed on your system
 
 Run the command:
 
+`npm install`
+
+then
+
 `npm run start`
 
 ## Hosting your own server
