@@ -42,11 +42,9 @@ export class ChatServer {
             });
         });
 
-
         this.server.listen(8080, function () {
             console.log('Open http://localhost:8080 in your browser');
         });
-
     }
 
     stop () {
@@ -54,6 +52,5 @@ export class ChatServer {
             this.server.close();
         }
     }
-
 }
 
