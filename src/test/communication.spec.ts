@@ -25,9 +25,6 @@ describe('Send chat', () => {
                 resolve();
             };
         });
-        sockClient1.onclose = function() {
-        };
-
 
         const sockClient2 = new SockJS('http://0.0.0.0:9999/echo');
         let sockClient2Message = "";
@@ -46,9 +43,6 @@ describe('Send chat', () => {
             };
         });
 
-        sockClient2.onclose = function() {
-        };
-
         Promise.all([socketClient1Opened, socketClient2Opened]).then(()=> {
             sockClient2.send("sock client 2 message");
         }, ()=> {
@@ -57,7 +51,9 @@ describe('Send chat', () => {
 
         Promise.all([socketClient1Messaged, socketClient2Messaged]).then((s1)=> {
             assert.equal(sockClient1Message, sockClient2Message, "Both clients should receive the message. ");
+            console.log("AMAZING");
             chatServer.stop();
+            console.log("STOPPED");
         }, ()=> {
         });
     });
