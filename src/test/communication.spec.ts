@@ -36,11 +36,25 @@ describe('Send chat', () => {
             console.log('closing client');
         };
 
-        sockClient2.onmessage = function(e) {
-            console.log(e.data);
-        };
 
-        sockClient2.send("sock client 2 message");
-        chatServer.stop();
+        Promise.all([sockClient1.onopen, sockClient2.onopen]).then(()=> {
+            console.log("DOOO IIT");
+            sockClient2.send("sock client 2 message");
+            // all loaded
+        }, ()=> {
+            console.log("FAILURE!!!")
+            // one or more failed
+        });
+
+
+        Promise.all([sockClient1.onmessage, sockClient2.onmessage]).then((s1)=> {
+            console.log("EVERYTHING WORKED");
+            console.log("MESSAGE: " + s1.values().next());
+            chatServer.stop();
+            // all loaded
+        }, ()=> {
+            // one or more failed
+        });
+
     });
 });
