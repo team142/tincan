@@ -1,60 +1,64 @@
 import {ChatServer} from "../app/chatServer";
 import 'mocha';
-//import 'primus'
+import {assert} from "chai";
+
 describe('Send chat', () => {
     it('should be received by all clients', () => {
 
         const SockJS = require('sockjs-client');
-
         const chatServer:ChatServer = new ChatServer(require('sockjs'));
-
-
         chatServer.start();
 
         const sockClient1 = new SockJS('http://0.0.0.0:9999/echo');
+        let sockClient1Message = "";
 
-        sockClient1.onopen = function() {
-            console.log('open');
-        };
 
+
+        let socketClient1Opened = new Promise(function (resolve) {
+            sockClient1.onopen = function () {
+                resolve();
+            };
+        });
+        let socketClient1Messaged = new Promise(function (resolve) {
+            sockClient1.onmessage = function (e) {
+                sockClient1Message = e.data;
+                resolve();
+            };
+        });
         sockClient1.onclose = function() {
-            console.log('closing client');
-        };
-
-        sockClient1.onmessage = function(e) {
-            console.log(e.data);
         };
 
 
         const sockClient2 = new SockJS('http://0.0.0.0:9999/echo');
+        let sockClient2Message = "";
 
-        sockClient2.onopen = function() {
-            console.log('open');
-        };
+
+        let socketClient2Opened = new Promise(function (resolve) {
+            sockClient2.onopen = function () {
+                resolve();
+            };
+        });
+
+        let socketClient2Messaged = new Promise(function (resolve) {
+            sockClient2.onmessage = function (e) {
+                sockClient2Message = e.data;
+                resolve();
+            };
+        });
 
         sockClient2.onclose = function() {
-            console.log('closing client');
         };
 
-
-        Promise.all([sockClient1.onopen, sockClient2.onopen]).then(()=> {
-            console.log("DOOO IIT");
+        Promise.all([socketClient1Opened, socketClient2Opened]).then(()=> {
             sockClient2.send("sock client 2 message");
-            // all loaded
         }, ()=> {
-            console.log("FAILURE!!!")
             // one or more failed
         });
 
-
-        Promise.all([sockClient1.onmessage, sockClient2.onmessage]).then((s1)=> {
-            console.log("EVERYTHING WORKED");
-            console.log("MESSAGE: " + s1.values().next());
+        Promise.all([socketClient1Messaged, socketClient2Messaged]).then((s1)=> {
+            assert.equal(sockClient1Message, sockClient2Message, "Both clients should receive the message. ");
             chatServer.stop();
-            // all loaded
         }, ()=> {
-            // one or more failed
         });
-
     });
 });
