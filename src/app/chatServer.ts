@@ -4,53 +4,44 @@
 // Create the HTTP server and serve our index.html
 //
 
-import {Server} from "http";
+
+import {Server} from "sockjs";
+import * as http from "http";
 
 export class ChatServer {
     //Dependency Injected Variables
-    private primus;
 
     //Class scope variables
-    private server: Server;
-    constructor(primus){
-        this.primus = primus;
+    private sockJs;
+    private httpServer: http.Server;
+    constructor(sockJs){
+        this.sockJs = sockJs;
+        this.httpServer = http.createServer();
+
     }
 
     start (){
-        this.server = require('http').createServer(function incoming(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            require('fs').createReadStream(__dirname + '/index.html').pipe(res);
-        });
-
-        //
-        // Attach Primus to the HTTP server.
-        //
-        let Primus = require('primus');
-        let primus = new Primus(this.server);
-
-        //
-        // Listen for connections and echo the events send.
-        //
         let connections: Array<any> = [];
-        primus.on('connection', function connection(spark) {
-            connections.push(spark);
-            spark.on('data', function received(data) {
-                console.log(spark.id, 'received message:', data);
+        let sockJsServer: Server = this.sockJs.createServer({ sockjs_url: 'http://cdn.jsdelivr.net/sockjs/1.0.1/sockjs.min.js' });
+        sockJsServer.on('connection', function(currentConnection) {
+            connections.push(currentConnection);
+            currentConnection.on('data', function(message) {
                 for(let connection of connections){
-                    connection.write(data);
+                    connection.write(message);
                 }
             });
+            currentConnection.on('close', function() {});
         });
 
-        this.server.listen(8080, function () {
-            console.log('Open http://localhost:8080 in your browser');
-        });
+        sockJsServer.installHandlers(this.httpServer, {prefix:'/echo'});
+        this.httpServer.listen(9999, '0.0.0.0');
     }
 
     stop () {
-        if(this.server !== null) {
-            this.server.close();
-        }
+        this.httpServer.removeAllListeners();
+        this.httpServer.close(() => {
+            process.exit();
+        });
     }
 }
 

@@ -1,25 +1,46 @@
 import {ChatServer} from "../app/chatServer";
-import { expect } from 'chai';
 import 'mocha';
-import 'primus'
-let Primus = require('primus');
+//import 'primus'
 describe('Send chat', () => {
     it('should be received by all clients', () => {
 
-        const server = require('http').createServer(function incoming(req, res) {
-            res.setHeader('Content-Type', 'text/html');
-            require('fs').createReadStream(__dirname + '/index.html').pipe(res);
-        });
+        const SockJS = require('sockjs-client');
 
-        const primus = new Primus(server, { pingInterval: false });
-        const chatServer:ChatServer = new ChatServer(require('primus'));
+        const chatServer:ChatServer = new ChatServer(require('sockjs'));
+
+
         chatServer.start();
 
-        let output = "";
-        primus.on('data', function received(data) {
-            output = data;
-            expect(output).to.equal("Value1");
-        });
-        primus.write("Value1");
+        const sockClient1 = new SockJS('http://0.0.0.0:9999/echo');
+
+        sockClient1.onopen = function() {
+            console.log('open');
+        };
+
+        sockClient1.onclose = function() {
+            console.log('closing client');
+        };
+
+        sockClient1.onmessage = function(e) {
+            console.log(e.data);
+        };
+
+
+        const sockClient2 = new SockJS('http://0.0.0.0:9999/echo');
+
+        sockClient2.onopen = function() {
+            console.log('open');
+        };
+
+        sockClient2.onclose = function() {
+            console.log('closing client');
+        };
+
+        sockClient2.onmessage = function(e) {
+            console.log(e.data);
+        };
+
+        sockClient2.send("sock client 2 message");
+        chatServer.stop();
     });
 });

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <title>Echo</title>
   <link rel="stylesheet" href="//cdn.jsdelivr.net/normalize/3.0.1/normalize.min.css">
-  <script src="/primus/primus.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
   <style>
     body { padding: 50px }
     #output { width: 450px; height: 200px; display: block; border: 0; outline: 0; margin: 0 0 4px }
@@ -19,33 +19,37 @@
     <button type="submit">echo</button>
   </form>
   <script>
-    var output = document.getElementById('output')
-      , echo = document.getElementById('echo');
+      var sock = new SockJS('http://0.0.0.0:9999/echo');
+      var output = document.getElementById('output')
+          , echo = document.getElementById('echo');
 
-    //
-    // Tell primus to create a new connect to the current domain/port/protocol
-    //
-    var primus = new Primus();
+      sock.onopen = function() {
+          console.log('open');
+      };
 
-    //
-    // Listen for incoming data and log it in our textarea.
-    //
-    primus.on('data', function received(data) {
-      output.value += data +'\n';
-    });
+      sock.onclose = function() {
+          console.log('close');
+      };
 
-    //
-    // Listen for submits of the form so we can send the message to the server.
-    //
-    document.getElementById('write').onsubmit = function submit(e) {
-      if (e && e.preventDefault) e.preventDefault();
 
       //
-      // Write the typed message.
+      // Listen for incoming data and log it in our textarea.
       //
-      primus.write(echo.value);
-      echo.value = '';
-    };
+      sock.onmessage = function(e) {
+          output.value += e.data +'\n';
+      };
+      //
+      // Listen for submits of the form so we can send the message to the server.
+      //
+      document.getElementById('write').onsubmit = function submit(e) {
+          if (e && e.preventDefault) e.preventDefault();
+
+          //
+          // Write the typed message.
+          //
+          sock.send(echo.value);
+          echo.value = '';
+      };
   </script>
 </body>
 </html>
